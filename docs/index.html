@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uncorrelated Returns — Portfolio Construction</title>
+  <meta name="description" content="Build portfolios from uncorrelated return streams: correlation clustering + inverse-vol + risk parity." />
+  <style>
+    :root { --bg:#0a0f17; --panel:#121b29; --ink:#eaf1fb; --muted:#92a4be; --accent:#4ade80; --accent2:#38bdf8; --line:#22324a; --code:#0c1626; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:radial-gradient(1100px 560px at 72% -10%,#16263f 0%,var(--bg) 55%); color:var(--ink); line-height:1.6; }
+    .wrap { max-width:920px; margin:0 auto; padding:0 24px; }
+    header { padding:80px 0 36px; text-align:center; }
+    .badge { display:inline-block; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); border:1px solid var(--line); border-radius:999px; padding:5px 14px; margin-bottom:20px; }
+    h1 { font-size:clamp(34px,5vw,50px); margin:0 0 12px; letter-spacing:-1px; }
+    .tag { font-size:19px; color:var(--muted); max-width:640px; margin:0 auto 26px; }
+    .cta a { display:inline-block; margin:6px; padding:12px 22px; border-radius:10px; text-decoration:none; font-weight:600; }
+    .cta .primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#04122e; }
+    .cta .ghost { border:1px solid var(--line); color:var(--ink); }
+    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin:36px 0; }
+    .m { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; text-align:center; }
+    .m .n { font-size:28px; font-weight:700; color:var(--accent); }
+    .m .l { font-size:13px; color:var(--muted); }
+    section { padding:32px 0; border-top:1px solid var(--line); }
+    h2 { font-size:24px; }
+    p.lead { color:var(--muted); }
+    img.shot { width:100%; border:1px solid var(--line); border-radius:12px; background:#fff; margin-top:10px; }
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    pre { background:var(--code); border:1px solid var(--line); border-radius:12px; padding:18px; overflow-x:auto; font-size:13.5px; color:#d7e6ff; }
+    code { font-family:ui-monospace,Menlo,monospace; }
+    .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+    .step { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+    .step h3 { margin:0 0 6px; color:var(--accent2); font-size:16px; }
+    .step p { margin:0; color:var(--muted); font-size:14px; }
+    footer { text-align:center; color:var(--muted); padding:48px 0; font-size:13px; }
+    a { color:var(--accent2); }
+    @media (max-width:640px){ .two{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="badge">Built from scratch · risk parity · MIT</span>
+      <h1>Uncorrelated Returns</h1>
+      <p class="tag">Combining several independent return streams beats picking any single
+        one. This builds the portfolio: cluster a multi-asset universe by correlation,
+        then balance risk across the clusters.</p>
+      <div class="cta">
+        <a class="primary" href="https://github.com/andreaisabelmontana/dalio-uncorrelated-returns-rebuild">View on GitHub →</a>
+      </div>
+    </header>
+
+    <div class="metrics">
+      <div class="m"><div class="n">6.65%</div><div class="l">portfolio vol (vs 15.3% equal-wt)</div></div>
+      <div class="m"><div class="n">1.83</div><div class="l">diversification ratio</div></div>
+      <div class="m"><div class="n">−16.5%</div><div class="l">max drawdown (vs −26.2%)</div></div>
+      <div class="m"><div class="n">12 → 6</div><div class="l">assets clustered into themes</div></div>
+    </div>
+
+    <section>
+      <h2>The recommended portfolio</h2>
+      <p class="lead">Inverse-vol within each cluster, risk parity across clusters — so a calm
+        bond sleeve and a wild crypto sleeve each contribute the same risk.</p>
+      <div class="two">
+        <img class="shot" src="weights.png" alt="Portfolio weights by cluster" />
+        <img class="shot" src="equity.png" alt="Out-of-sample equity curve" />
+      </div>
+      <img class="shot" src="correlation.png" alt="Clustered correlation heatmap" style="margin-top:16px;" />
+    </section>
+
+    <section>
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="step"><h3>1 · Cluster</h3><p>Correlation → distance √(½(1−ρ)) → hierarchical clustering, k chosen by silhouette.</p></div>
+        <div class="step"><h3>2 · Weight within</h3><p>Inverse-volatility weights inside each cluster.</p></div>
+        <div class="step"><h3>3 · Balance across</h3><p>Risk parity over the cluster streams (SLSQP), equalizing risk contributions.</p></div>
+        <div class="step"><h3>4 · Evaluate</h3><p>Train/test split; report vol, drawdown, Sharpe, diversification ratio.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Run it</h2>
+      <pre><code>pip install -e ".[dev]"
+uncorrelated --plots docs        # clusters, weights, performance + charts
+uncorrelated --source live       # use real market data (yfinance)</code></pre>
+    </section>
+
+    <footer>
+      Built from scratch by <a href="https://github.com/andreaisabelmontana">Andrea Montana</a> ·
+      MIT · <a href="https://github.com/andreaisabelmontana/dalio-uncorrelated-returns-rebuild">source</a>
+    </footer>
+  </div>
+</body>
+</html>
